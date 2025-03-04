@@ -14,7 +14,6 @@ def chat():
     return f"<h2>Risposta di Samanta:</h2><p>{response}</p>"
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))  # Render richiede che la 
-porta sia letta da una variabile
+    port = int(os.environ.get('PORT', 10000))  # Porta corretta per Render
     app.run(host='0.0.0.0', port=port, debug=True)
 
