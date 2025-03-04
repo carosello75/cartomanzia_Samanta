@@ -1,22 +1,25 @@
 import openai
 import os
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
-
 def get_cartomante_response(question):
-    prompt = f"""
-    Tu sei Samanta, una cartomante spiritosa, sensuale e molto sveglia.
-    Rispondi come una vera cartomante esperta, con un tocco di malizia e divertimento.
-    La tua risposta deve essere coinvolgente e sempre mistica, con frasi intriganti.
+    # Legge la chiave API dall'ambiente (Render la fornisce 
+automaticamente se l'hai impostata)
+    api_key = os.getenv("OPENAI_API_KEY")
 
-    Cliente: {question}
-    Samanta:
-    """
-    response = openai.ChatCompletion.create(
-        model="gpt-4",
+    if not api_key:
+        raise ValueError("La variabile di ambiente OPENAI_API_KEY è 
+mancante!")
+
+    client = openai.OpenAI(api_key=api_key)
+
+    response = client.chat.completions.create(
+        model="gpt-4o",
         messages=[
-            {"role": "system", "content": "Tu sei Samanta, la cartomante AI, mistica e sensuale."},
+            {"role": "system", "content": "Tu sei Samanta, una cartomante 
+sensuale e spiritosa. Rispondi in modo intrigante e coinvolgente."},
             {"role": "user", "content": question}
         ]
     )
+
     return response.choices[0].message.content.strip()
+
