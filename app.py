@@ -1,6 +1,5 @@
 from flask import Flask, request, jsonify
 from gpt_logic import get_cartomante_response
-import os
 
 app = Flask(__name__)
 
@@ -11,9 +10,15 @@ def chat():
         return jsonify({'error': 'Domanda mancante'}), 400
 
     response = get_cartomante_response(question)
-    return f"<h2>Risposta di Samanta:</h2><p>{response}</p>"
+    return jsonify({'risposta': response})
+
+@app.route('/')
+def home():
+    return "Benvenuto! Per parlare con Samanta, usa: 
+/chat?question=Ciao%20Samanta"
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 10000))  # Porta corretta per Render
+    import os
+    port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port, debug=True)
 
