@@ -2,14 +2,14 @@ import openai
 import os
 
 def get_cartomante_response(question):
-    # Legge la chiave API dall'ambiente (Render la fornisce 
-automaticamente se l'hai impostata)
+    # Legge la chiave API da variabile d'ambiente
     api_key = os.getenv("OPENAI_API_KEY")
 
     if not api_key:
         raise ValueError("La variabile di ambiente OPENAI_API_KEY è 
 mancante!")
 
+    # Inizializza il client con la chiave corretta
     client = openai.OpenAI(api_key=api_key)
 
     response = client.chat.completions.create(
