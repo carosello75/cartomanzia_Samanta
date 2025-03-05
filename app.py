@@ -25,12 +25,18 @@ def voice():
     if not text:
         return "Nessun testo fornito", 400
 
-    tts = gTTS(text, lang='it')
+    tts = gTTS(text=text, lang='it')
     temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".mp3")
     tts.save(temp_file.name)
-    temp_file.close()
 
-    return send_file(temp_file.name, mimetype='audio/mpeg', as_attachment=True, download_name='samanta.mp3')
+    response = send_file(temp_file.name, mimetype="audio/mpeg")
+
+    @response.call_on_close
+    def cleanup():
+        os.unlink(temp_file.name)
+
+    return response
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=10000, debug=True)
+    app.run(host='0.0.0.0', port=5000)
+

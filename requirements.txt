@@ -1,3 +1,4 @@
-Flask
-openai
-gtts
+Flask==2.3.2
+openai==1.2.0
+gtts==2.3.2
+
