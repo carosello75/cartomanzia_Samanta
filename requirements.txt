@@ -1,4 +1,4 @@
 Flask
 gtts
-openai
-gunicorn
+openai==1.3.5
+
