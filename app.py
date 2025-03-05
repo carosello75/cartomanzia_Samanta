@@ -1,15 +1,14 @@
 from flask import Flask, request, jsonify, send_file
+from gpt_logic import get_cartomante_response
 from gtts import gTTS
 import tempfile
 import os
-from gpt_logic import get_cartomante_response  # Assicurati di avere questo 
-file correttamente!
 
 app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return 'Benvenuto! Per parlare con Samanta, usa: /chat?question=Ciao%20Samanta'
+    return 'Benvenuto! Per parlare con Samanta, usa: <a href="/chat?question=Ciao%20Samanta">/chat?question=Ciao%20Samanta</a>'
 
 @app.route('/chat', methods=['GET'])
 def chat():
