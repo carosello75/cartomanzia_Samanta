@@ -9,8 +9,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return 'Benvenuto! Per parlare con Samanta, usa: 
-/chat?question=Ciao%20Samanta'
+    return 'Benvenuto! Per parlare con Samanta, usa: /chat?question=Ciao%20Samanta'
 
 @app.route('/chat', methods=['GET'])
 def chat():
