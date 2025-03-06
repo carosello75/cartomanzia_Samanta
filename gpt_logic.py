@@ -3,7 +3,6 @@ import os
 from gtts import gTTS
 import base64
 
-# Imposta la chiave API per il modulo openai
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def get_cartomante_response(user_input):
@@ -11,13 +10,14 @@ def get_cartomante_response(user_input):
         {"role": "system", "content": "Sei Samanta, una cartomante virtuale pronta a leggere le carte e rispondere alle domande delle persone."},
         {"role": "user", "content": user_input}
     ]
-     
+
+    # ✅ Metodo corretto per openai>=1.0.0
     risposta = openai.Chat.completions.create(
         model="gpt-4",
         messages=messaggi,
         max_tokens=200
     )
-     
+    
     return risposta.choices[0].message.content
     
 def generate_voice_response(text):
