@@ -3,17 +3,16 @@ import os
 from gtts import gTTS
 import base64
 
+# Imposta la chiave API per il modulo openai
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def get_cartomante_response(user_input):
-    client = openai.OpenAI(api_key=openai.api_key)
-
     messaggi = [
         {"role": "system", "content": "Sei Samanta, una cartomante virtuale pronta a leggere le carte e rispondere alle domande delle persone."},
         {"role": "user", "content": user_input}
     ]
      
-    risposta = client.chat.completions.create(
+    risposta = openai.ChatCompletion.create(
         model="gpt-4",
         messages=messaggi,
         max_tokens=200
