@@ -1,32 +1,61 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
+from flask import Flask, request, jsonify, send_file
+from gtts import gTTS
+import tempfile
 import os
-from gpt_logic import get_cartomante_response, generate_voice_response
+import openai
+from dotenv import load_dotenv
+
+# Carica il file .env
+load_dotenv()
+
+# Legge la chiave API da .env
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 app = Flask(__name__)
-CORS(app)  # Abilita CORS
 
 @app.route('/')
 def home():
-    return "API di Samanta è attiva!"
+    return 'Benvenuto! Per parlare con Samanta, usa: /chat?question=Ciao%20Samanta'
 
-@app.route('/chat', methods=['POST'])
+@app.route('/chat', methods=['GET'])
 def chat():
-    data = request.get_json()
-    user_message = data.get("message", "")
-
-    if not user_message:
-        return jsonify({"error": "Messaggio non fornito"}), 400
+    question = request.args.get('question', '')
+    if not question:
+        return jsonify({'errore': 'Nessuna domanda ricevuta'}), 400
 
     try:
-        risposta = get_cartomante_response(user_message)
-        audio_base64 = generate_voice_response(risposta)
-        return jsonify({"risposta": risposta, "audio": audio_base64})
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "Sei Samanta, una cartomante virtuale pronta a leggere le carte e rispondere alle domande delle persone."},
+                {"role": "user", "content": question}
+            ]
+        )
+        answer = response['choices'][0]['message']['content']
+        return jsonify({'risposta': answer})
 
     except Exception as e:
-        return jsonify({"error": f"Errore interno: {str(e)}"}), 500
+        return jsonify({'errore': str(e)}), 500
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))  # Questo prende la porta da Render
-    app.run(host="0.0.0.0", port=port)
+
+@app.route('/voice', methods=['GET'])
+def voice():
+    text = request.args.get('text', '')
+    if not text:
+        return "Nessun testo fornito", 400
+
+    tts = gTTS(text=text, lang='it')
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".mp3")
+    tts.save(temp_file.name)
+
+    response = send_file(temp_file.name, mimetype="audio/mpeg")
+
+    @response.call_on_close
+    def cleanup():
+        os.unlink(temp_file.name)
+
+    return response
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
 
