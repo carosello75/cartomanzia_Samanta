@@ -1,23 +1,32 @@
 from flask import Flask, request, jsonify
-from gpt_logic import get_cartomante_response, generate_voice_response
+from flask_cors import CORS
 import os
+from gpt_logic import get_cartomante_response, generate_voice_response
 
 app = Flask(__name__)
+CORS(app)  # Abilita CORS
 
 @app.route('/')
 def home():
-    return 'Benvenuto! Per parlare con Samanta, vai su /chat e aggiungi ?question=la tua domanda'
+    return "API di Samanta è attiva!"
 
-@app.route('/chat', methods=['GET'])
+@app.route('/chat', methods=['POST'])
 def chat():
-    question = request.args.get('question')
-    if not question:
-        return jsonify({'error': 'Specifica una domanda nella query string'}), 400
+    data = request.get_json()
+    user_message = data.get("message", "")
 
-    risposta = get_cartomante_response(question)
-    return jsonify({'response': risposta})
+    if not user_message:
+        return jsonify({"error": "Messaggio non fornito"}), 400
 
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 10000))  # Render utilizza la variabile PORT
-    app.run(host='0.0.0.0', port=port)
+    try:
+        risposta = get_cartomante_response(user_message)
+        audio_base64 = generate_voice_response(risposta)
+        return jsonify({"risposta": risposta, "audio": audio_base64})
+
+    except Exception as e:
+        return jsonify({"error": f"Errore interno: {str(e)}"}), 500
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 10000))  # Questo prende la porta da Render
+    app.run(host="0.0.0.0", port=port)
 
