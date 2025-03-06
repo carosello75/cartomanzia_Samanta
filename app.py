@@ -1,16 +1,15 @@
-from flask import Flask, request, jsonify, send_file
-from gtts import gTTS
-import tempfile
-import os
+from flask import Flask, request, jsonify
 import requests
-from openai import OpenAI
+import openai
+import os
+from dotenv import load_dotenv
 
-# URL del tuo sito WordPress con lo snippet attivo
-WORDPRESS_SITE_URL = "https://tarocchidelweb.netsons.org"  # Cambialo col tuo dominio vero
+# Carichiamo il file .env se esiste (per sicurezza)
+load_dotenv()
 
-app = Flask(__name__)
+# URL del tuo sito con lo snippet attivo
+WORDPRESS_SITE_URL = "https://tarocchidelweb.netsons.org"  # cambia con il tuo dominio corretto
 
-# Funzione per recuperare la chiave API da WordPress
 def fetch_openai_key():
     try:
         url = f"{WORDPRESS_SITE_URL}/wp-json/samanta-ai/v1/get-api-key"
@@ -21,61 +20,50 @@ def fetch_openai_key():
 
         if not api_key:
             raise ValueError("Chiave API non trovata o vuota")
+
         return api_key
     except Exception as e:
         print(f"Errore nel recupero della chiave API: {e}")
         return None
 
-# Recupera la chiave API all'avvio
-openai_api_key = fetch_openai_key()
+# Recuperiamo la chiave OpenAI e la configuriamo
+openai.api_key = fetch_openai_key()
 
-if not openai_api_key:
+if not openai.api_key:
     raise Exception("Impossibile recuperare la chiave OpenAI dal sito WordPress. Controlla lo snippet e il sito!")
 
-# Inizializza il client OpenAI con la chiave
-client = OpenAI(api_key=openai_api_key)
+app = Flask(__name__)
 
-@app.route('/')
+@app.route("/")
 def home():
     return 'Benvenuto! Per parlare con Samanta, usa: /chat?question=Ciao%20Samanta'
 
-@app.route('/chat', methods=['GET'])
+@app.route("/chat", methods=["GET"])
 def chat():
-    question = request.args.get('question', '')
+    question = request.args.get("question", "")
+
     if not question:
-        return jsonify({'errore': 'Nessuna domanda ricevuta'}), 400
+        return jsonify({"errore": "Devi fornire una domanda usando il parametro 'question'."})
 
     try:
-        response = client.chat.completions.create(
-            model="gpt-4",
+        # Chiamata OpenAI aggiornata (nuovo metodo 1.x)
+        response = openai.chat.completions.create(
+            model="gpt-4",  # puoi cambiare in gpt-4 o altro se serve
             messages=[
-                {"role": "system", "content": "Sei Samanta, una cartomante virtuale pronta a leggere le carte e rispondere alle domande delle persone."},
+                {"role": "system", "content": "Tu sei Samanta, una cartomante simpatica, spiritosa e intrigante."},
                 {"role": "user", "content": question}
-            ]
+            ],
+            temperature=0.7,
+            max_tokens=500
         )
-        answer = response.choices[0].message.content
-        return jsonify({'risposta': answer})
+
+        reply = response.choices[0].message.content.strip()
+
+        return jsonify({"risposta": reply})
+
     except Exception as e:
-        return jsonify({'errore': f'Errore di comunicazione con OpenAI: {str(e)}'}), 500
+        return jsonify({"errore": f"Errore di comunicazione con OpenAI: {e}"})
 
-@app.route('/voice', methods=['GET'])
-def voice():
-    text = request.args.get('text', '')
-    if not text:
-        return "Nessun testo fornito", 400
-
-    tts = gTTS(text=text, lang='it')
-    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".mp3")
-    tts.save(temp_file.name)
-
-    response = send_file(temp_file.name, mimetype="audio/mpeg")
-
-    @response.call_on_close
-    def cleanup():
-        os.unlink(temp_file.name)
-
-    return response
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
 
