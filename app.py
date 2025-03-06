@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from gpt_logic import get_cartomante_response, generate_voice_response
+import os
 
 app = Flask(__name__)
 
@@ -17,7 +18,6 @@ def chat():
     return jsonify({'response': risposta})
 
 if __name__ == '__main__':
-    import os
-    port = int(os.environ.get('PORT', 10000))  # Render di solito usa 10000
+    port = int(os.environ.get('PORT', 10000))  # Render utilizza la variabile PORT
     app.run(host='0.0.0.0', port=port)
 
