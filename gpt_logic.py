@@ -1,18 +1,35 @@
 import os
+import requests
 from gtts import gTTS
 import base64
-from dotenv import load_dotenv
 from openai import OpenAI
+from dotenv import load_dotenv
 
-# Carica variabili ambiente
+# Carica variabili d'ambiente se esiste un .env locale (utile in sviluppo)
 load_dotenv()
 
-# Leggi API Key da ENV
-api_key = os.getenv("OPENAI_API_KEY")
-if not api_key:
-    raise ValueError("❌ OPENAI_API_KEY non trovata! Controlla le variabili d'ambiente.")
+# URL del tuo sito WordPress e dell'endpoint che espone la chiave
+WORDPRESS_API_URL = "https://tarocchidelweb.netsons.org/wp-json/samanta-ai/v1/get-api-key"
 
-# Crea client OpenAI
+def get_openai_api_key():
+    """
+    Recupera dinamicamente la chiave OpenAI dal tuo sito WordPress.
+    """
+    try:
+        response = requests.get(WORDPRESS_API_URL)
+        response.raise_for_status()
+        data = response.json()
+        api_key = data.get('api_key', None)
+        if not api_key:
+            raise ValueError("❌ Chiave API non trovata nell'endpoint WordPress!")
+        return api_key
+    except Exception as e:
+        raise Exception(f"Errore nel recupero chiave da WordPress: {e}")
+
+# Leggi la chiave in tempo reale
+api_key = get_openai_api_key()
+
+# Inizializza client OpenAI
 client = OpenAI(api_key=api_key)
 
 def get_cartomante_response(user_input):
