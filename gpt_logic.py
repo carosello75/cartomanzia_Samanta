@@ -1,9 +1,19 @@
-import openai
 import os
 from gtts import gTTS
 import base64
+from dotenv import load_dotenv
+from openai import OpenAI
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# Carica variabili ambiente
+load_dotenv()
+
+# Leggi API Key da ENV
+api_key = os.getenv("OPENAI_API_KEY")
+if not api_key:
+    raise ValueError("❌ OPENAI_API_KEY non trovata! Controlla le variabili d'ambiente.")
+
+# Crea client OpenAI
+client = OpenAI(api_key=api_key)
 
 def get_cartomante_response(user_input):
     messaggi = [
@@ -11,15 +21,16 @@ def get_cartomante_response(user_input):
         {"role": "user", "content": user_input}
     ]
 
-    # ✅ Metodo corretto per openai>=1.0.0
-    risposta = openai.Chat.completions.create(
-        model="gpt-4",
-        messages=messaggi,
-        max_tokens=200
-    )
-    
-    return risposta.choices[0].message.content
-    
+    try:
+        risposta = client.chat.completions.create(
+            model="gpt-4",
+            messages=messaggi,
+            max_tokens=200
+        )
+        return risposta.choices[0].message.content
+    except Exception as e:
+        return f"Errore nella comunicazione con OpenAI: {str(e)}"
+
 def generate_voice_response(text):
     tts = gTTS(text=text, lang='it')
     tts.save("response.mp3")
