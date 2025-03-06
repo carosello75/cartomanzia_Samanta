@@ -12,7 +12,7 @@ def get_cartomante_response(user_input):
         {"role": "user", "content": user_input}
     ]
      
-    risposta = openai.ChatCompletion.create(
+    risposta = openai.Chat.completions.create(
         model="gpt-4",
         messages=messaggi,
         max_tokens=200
