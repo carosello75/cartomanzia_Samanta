@@ -1,27 +1,23 @@
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify
 from gpt_logic import get_cartomante_response, generate_voice_response
 
 app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return 'Benvenuto! Samanta è online e pronta a rispondere.'
+    return 'Benvenuto! Per parlare con Samanta, vai su /chat e aggiungi ?question=la tua domanda'
 
 @app.route('/chat', methods=['GET'])
 def chat():
     question = request.args.get('question')
     if not question:
-        return jsonify({'errore': 'Nessuna domanda fornita'}), 400
+        return jsonify({'error': 'Specifica una domanda nella query string'}), 400
 
     risposta = get_cartomante_response(question)
-    return jsonify({'risposta': risposta})
+    return jsonify({'response': risposta})
 
-@app.route('/voice', methods=['GET'])
-def voice():
-    text = request.args.get('text')
-    if not text:
-        return jsonify({'errore': 'Nessun testo fornito'}), 400
-
-    file_path = generate_voice_response(text)
-    return send_file(file_path, mimetype="audio/mpeg")
+if __name__ == '__main__':
+    import os
+    port = int(os.environ.get('PORT', 10000))  # Render di solito usa 10000
+    app.run(host='0.0.0.0', port=port)
 
