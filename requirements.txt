@@ -1,7 +1,4 @@
-certifi==2024.8.30
-charset-normalizer==3.4.0
-idna==3.10
-numpy==2.2.0
-requests==2.32.3
-urllib3==2.2.3
-wheel @ file:///usr/local/Cellar/python%403.13/3.13.0_1/libexec/wheel-0.44.0-py3-none-any.whl#sha256=f49b82715dce6365f75eddcb0a9bb47d0d46feaf14bbc739dfcbd677b7073f5b
+openai==0.27.0
+requests==2.28.2
+python-dotenv==0.21.1
+
